@@ -82,7 +82,7 @@
             font-size: 2.5rem;
             font-weight: bold;
         }
-        .blind-controls, .timer-buttons, .blind-sets {
+        .blind-controls, .timer-buttons, .blind-sets, .time-sets {
             margin-top: 18px;
             display: flex;
             flex-direction: row;
@@ -159,6 +159,34 @@
             background-color: #4CAF50;
             color: white;
         }
+        .time-sets {
+            margin-top: 18px;
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+        }
+        .time-sets h3 {
+            width: 100%;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .time-set-button {
+            background-color: #f0f0f0;
+            border: 1px solid #ddd;
+            padding: 8px 15px;
+            margin: 5px 0;
+            border-radius: 4px;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: background 0.2s, color 0.2s;
+        }
+        .time-set-button.active {
+            background-color: #43b36a;
+            color: white;
+        }
         @media (max-width: 500px) {
             .circle-timer-container, .circle-timer-svg {
                 width: 98vw;
@@ -168,7 +196,7 @@
             .timer-value {
                 font-size: 2.2rem;
             }
-            .blind-controls, .timer-buttons, .blind-sets {
+            .blind-controls, .timer-buttons, .blind-sets, .time-sets {
                 flex-direction: column;
                 gap: 6px;
             }
@@ -204,19 +232,19 @@
             .current-blind-value {
                 font-size: 1.5rem;
             }
-            .blind-controls, .timer-buttons, .blind-sets {
+            .blind-controls, .timer-buttons, .blind-sets, .time-sets {
                 flex-direction: column;
                 gap: 6px;
                 width: 100%;
             }
-            .blind-controls button, .timer-buttons button, .blind-set-button {
+            .blind-controls button, .timer-buttons button, .blind-set-button, .time-set-button {
                 width: 90vw;
                 max-width: 350px;
                 font-size: 1rem;
                 padding: 10px 0;
                 margin: 0 auto 6px auto;
             }
-            .blind-sets h3 {
+            .blind-sets h3, .time-sets h3 {
                 font-size: 1.1rem;
             }
             .popup-content {
@@ -292,6 +320,12 @@
         <button onclick="pauseTimer()">일시정지</button>
         <button onclick="resetTimer()">리셋</button>
     </div>
+    <div class="blind-sets time-sets">
+        <h3>타이머 시간 선택</h3>
+        <button class="time-set-button" onclick="selectTimeSet(600)">10분</button>
+        <button class="time-set-button" onclick="selectTimeSet(900)">15분</button>
+        <button class="time-set-button" onclick="selectTimeSet(1200)">20분</button>
+    </div>
     <div class="blind-sets">
         <h3>블라인드 세트 선택</h3>
         <button class="blind-set-button" onclick="selectBlindSet(0)">세트 1: 일반</button>
@@ -305,18 +339,20 @@
             <div class="popup-blind" id="popup-blind-value">500/1000</div>
         </div>
     </div>
+    <audio id="blind-sound" src="data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YYQAAABkAAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD" preload="auto"></audio>
     <script>
-        let timeLeft = 15 * 60; // 15분
-        let timerId = null;
+        let selectedTime = 900; // 기본 15분
+        let totalTime = 900;
+        let timeLeft = 900;
+        let currentSetIndex = 1; // 칩 게임
         let currentLevel = 0;
-        let currentSetIndex = 0;
-        const totalTime = 15 * 60; // 15분
+        let timerId = null;
 
         const blindSets = [
             { name: "일반", levels: ["25/50", "50/100", "75/150", "100/200", "150/300", "200/400", "300/600", "400/800"] },
             { name: "칩 게임", levels: ["1/2", "2/4", "3/6", "4/8", "5/10", "6/12", "7/14", "8/16", "9/18", "10/20"] },
-            { name: "링 게임1", levels: ["100/200", "200/400", "300/600", "400/800", "500/1000", "600/1200", "700/1400", "800/1600"] },
-            { name: "링 게임2", levels: ["500/1000", "1000/2000", "1500/3000", "2000/4000", "2500/5000", "3000/6000", "3500/7000", "4000/8000"] }
+            { name: "링 게임1", levels: ["100/200", "200/400", "300/600", "400/800", "500/1000", "600/1200", "700/1400", "800/1600", "900/1800", "1000/2000"] },
+            { name: "링 게임2", levels: ["500/1000", "1000/2000", "1500/3000", "2000/4000", "2500/5000", "3000/6000", "3500/7000", "4000/8000", "4500/9000", "5000/10000"] }
         ];
 
         // 반원 아크의 전체 길이(대략 565px)
@@ -325,14 +361,30 @@
         function updateArc() {
             const percent = timeLeft / totalTime;
             const dash = ARC_LENGTH * percent;
-            document.getElementById('progress-arc').setAttribute('stroke-dasharray', `${dash},${ARC_LENGTH}`);
+            const progressArc = document.getElementById('progress-arc');
+            progressArc.setAttribute('stroke-dasharray', `${dash},${ARC_LENGTH}`);
+            const timerElem = document.getElementById('timer');
+            if (timeLeft <= 60) {
+                progressArc.setAttribute('stroke', '#e74c3c'); // 빨간색
+                timerElem.style.color = '#e74c3c';
+            } else {
+                progressArc.setAttribute('stroke', '#4a7bdc'); // 파란색
+                timerElem.style.color = '#111';
+            }
         }
 
         function selectBlindSet(setIndex) {
             pauseTimer();
             currentSetIndex = setIndex;
             currentLevel = 0;
-            timeLeft = totalTime;
+            // 마지막 블라인드라면 타이머 --:-- 고정
+            const currentSet = blindSets[currentSetIndex];
+            if (currentLevel === currentSet.levels.length - 1) {
+                timeLeft = 0;
+                pauseTimer();
+            } else {
+                timeLeft = totalTime;
+            }
             document.querySelectorAll('.blind-set-button').forEach((button, index) => {
                 button.classList.toggle('active', index === setIndex);
             });
@@ -345,41 +397,80 @@
             const currentSet = blindSets[currentSetIndex];
             document.getElementById('current-blind').textContent = currentSet.levels[currentLevel];
             const nextLevel = (currentLevel + 1) % currentSet.levels.length;
-            document.getElementById('next-blind').textContent = currentSet.levels[nextLevel];
+            if (currentLevel === currentSet.levels.length - 1) {
+                document.getElementById('next-blind').textContent = '';
+            } else {
+                document.getElementById('next-blind').textContent = currentSet.levels[nextLevel];
+            }
         }
 
         function updateTimer() {
             const minutes = Math.floor(timeLeft / 60);
             const seconds = timeLeft % 60;
-            document.getElementById('timer').textContent = 
-                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            const currentSet = blindSets[currentSetIndex];
+            if (currentLevel === currentSet.levels.length - 1 && timeLeft <= 0) {
+                document.getElementById('timer').textContent = 'FINAL!';
+            } else {
+                document.getElementById('timer').textContent = 
+                    `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }
         }
 
         function showBlindUpPopup(newBlind) {
+            const currentSet = blindSets[currentSetIndex];
+            if (currentLevel === currentSet.levels.length - 1) return; // 마지막 블라인드에서는 팝업 없음
             document.getElementById('popup-blind-value').textContent = newBlind;
             const popup = document.getElementById('blind-up-popup');
             popup.style.display = 'flex';
+            const sound = document.getElementById('blind-sound');
+            if(sound) { sound.currentTime = 0; sound.play(); }
             setTimeout(() => {
                 popup.style.display = 'none';
             }, 3000);
         }
 
         function startTimer() {
-            if (timerId === null) {
-                timerId = setInterval(() => {
-                    timeLeft--;
+            pauseTimer(); // 항상 기존 타이머 중지
+            // 마지막 블라인드에서는 타이머 동작 X, --:-- 고정
+            const currentSet = blindSets[currentSetIndex];
+            if (currentLevel === currentSet.levels.length - 1) {
+                timeLeft = 0;
+                updateTimer();
+                updateArc();
+                pauseTimer();
+                return;
+            }
+            timerId = setInterval(() => {
+                const currentSet = blindSets[currentSetIndex];
+                // 마지막 블라인드로 진입 직전이면 즉시 처리
+                if (currentLevel === currentSet.levels.length - 2 && timeLeft === 1) {
+                    currentLevel = currentSet.levels.length - 1;
+                    updateBlindInfo();
+                    timeLeft = 0;
                     updateTimer();
                     updateArc();
-                    if (timeLeft <= 0) {
-                        const currentSet = blindSets[currentSetIndex];
-                        currentLevel = (currentLevel + 1) % currentSet.levels.length;
+                    showBlindUpPopup(currentSet.levels[currentLevel]);
+                    pauseTimer();
+                    return;
+                }
+                timeLeft--;
+                updateTimer();
+                updateArc();
+                if (timeLeft <= 0) {
+                    if (currentLevel === currentSet.levels.length - 1) {
+                        timeLeft = 0;
+                        updateTimer();
+                        updateArc();
+                        pauseTimer();
+                    } else {
+                        currentLevel = (currentLevel + 1);
                         updateBlindInfo();
                         timeLeft = totalTime;
                         updateArc();
                         showBlindUpPopup(currentSet.levels[currentLevel]);
                     }
-                }, 1000);
-            }
+                }
+            }, 1000);
         }
 
         function pauseTimer() {
@@ -389,8 +480,14 @@
 
         function resetTimer() {
             pauseTimer();
-            timeLeft = totalTime;
             currentLevel = 0;
+            const currentSet = blindSets[currentSetIndex];
+            if (currentLevel === currentSet.levels.length - 1) {
+                timeLeft = 0;
+                pauseTimer();
+            } else {
+                timeLeft = totalTime;
+            }
             updateBlindInfo();
             updateTimer();
             updateArc();
@@ -398,18 +495,58 @@
 
         function nextBlind() {
             const currentSet = blindSets[currentSetIndex];
-            currentLevel = (currentLevel + 1) % currentSet.levels.length;
-            updateBlindInfo();
-            timeLeft = totalTime;
-            updateTimer();
-            updateArc();
+            if (currentLevel < currentSet.levels.length - 1) {
+                currentLevel = (currentLevel + 1);
+                updateBlindInfo();
+                // 마지막 블라인드로 이동 시 --:-- 고정
+                if (currentLevel === currentSet.levels.length - 1) {
+                    timeLeft = 0;
+                    updateTimer();
+                    updateArc();
+                    pauseTimer();
+                } else {
+                    timeLeft = totalTime;
+                    updateTimer();
+                    updateArc();
+                    pauseTimer();
+                }
+            } else {
+                // 이미 마지막 블라인드
+                currentLevel = currentSet.levels.length - 1;
+                timeLeft = 0;
+                updateTimer();
+                updateArc();
+                pauseTimer();
+            }
         }
 
         function prevBlind() {
             const currentSet = blindSets[currentSetIndex];
-            currentLevel = (currentLevel - 1 + currentSet.levels.length) % currentSet.levels.length;
-            updateBlindInfo();
-            timeLeft = totalTime;
+            if (currentLevel > 0) {
+                currentLevel = (currentLevel - 1);
+                updateBlindInfo();
+                timeLeft = totalTime;
+                pauseTimer();
+            } else {
+                currentLevel = 0;
+                timeLeft = totalTime;
+                pauseTimer();
+            }
+            updateTimer();
+            updateArc();
+        }
+
+        function selectTimeSet(seconds) {
+            pauseTimer();
+            totalTime = seconds;
+            timeLeft = seconds;
+            selectedTime = seconds;
+            document.querySelectorAll('.time-set-button').forEach(btn => {
+                btn.classList.remove('active');
+                if (parseInt(btn.textContent) === Math.round(seconds/60)) {
+                    btn.classList.add('active');
+                }
+            });
             updateTimer();
             updateArc();
         }
@@ -418,7 +555,18 @@
         updateTimer();
         updateBlindInfo();
         updateArc();
-        document.querySelector('.blind-set-button').classList.add('active');
+        // 블라인드 세트: 2번(칩 게임)만 active
+        document.querySelectorAll('.blind-set-button').forEach((btn, idx) => {
+            if(idx === 1) btn.classList.add('active');
+            else btn.classList.remove('active');
+        });
+        // 타이머 시간 버튼: 15분만 active
+        document.querySelectorAll('.time-set-button').forEach(btn => {
+            btn.classList.remove('active');
+            if (parseInt(btn.textContent) === Math.round(selectedTime/60)) {
+                btn.classList.add('active');
+            }
+        });
     </script>
 </body>
 </html>

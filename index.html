@@ -169,6 +169,55 @@
                 gap: 6px;
             }
         }
+        @media (max-width: 600px) {
+            .circle-timer-container, .circle-timer-svg {
+                width: 92vw !important;
+                min-width: 0;
+                max-width: 92vw !important;
+                height: 44vw !important;
+                max-height: 44vw !important;
+            }
+            .timer-value {
+                font-size: 2.2rem;
+            }
+            .next-blind-label {
+                font-size: 0.9rem;
+            }
+            .next-blind-value {
+                font-size: 1rem;
+            }
+            .current-blind-label {
+                font-size: 1.1rem;
+            }
+            .current-blind-value {
+                font-size: 1.5rem;
+            }
+            .blind-controls, .timer-buttons, .blind-sets {
+                flex-direction: column;
+                gap: 6px;
+                width: 100%;
+            }
+            .blind-controls button, .timer-buttons button, .blind-set-button {
+                width: 90vw;
+                max-width: 350px;
+                font-size: 1rem;
+                padding: 10px 0;
+                margin: 0 auto 6px auto;
+            }
+            .blind-sets h3 {
+                font-size: 1.1rem;
+            }
+            .popup-content {
+                padding: 24px 10vw 18px 10vw;
+                min-width: 0;
+            }
+            .popup-title {
+                font-size: 1.3rem;
+            }
+            .popup-blind {
+                font-size: 1.1rem;
+            }
+        }
         /* 블라인드 업 팝업 */
         #blind-up-popup {
             position: fixed;

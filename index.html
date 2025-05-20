@@ -508,7 +508,10 @@
                     timeLeft = totalTime;
                     updateTimer();
                     updateArc();
-                    pauseTimer();
+                    // 타이머가 실행 중이었다면 계속 실행
+                    if (timerId) {
+                        startTimer();
+                    }
                 }
             } else {
                 // 이미 마지막 블라인드
@@ -526,14 +529,22 @@
                 currentLevel = (currentLevel - 1);
                 updateBlindInfo();
                 timeLeft = totalTime;
-                pauseTimer();
+                updateTimer();
+                updateArc();
+                // 타이머가 실행 중이었다면 계속 실행
+                if (timerId) {
+                    startTimer();
+                }
             } else {
                 currentLevel = 0;
                 timeLeft = totalTime;
-                pauseTimer();
+                updateTimer();
+                updateArc();
+                // 타이머가 실행 중이었다면 계속 실행
+                if (timerId) {
+                    startTimer();
+                }
             }
-            updateTimer();
-            updateArc();
         }
 
         function selectTimeSet(seconds) {
